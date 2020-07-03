@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3C352104-7230-41CF-99FE-203B95332F2A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>GlacierTEXEditor</RootNamespace>
+    <AssemblyName>GlacierTEXEditor</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DirectXTexNet, Version=1.0.0.6, Culture=neutral, PublicKeyToken=67e4f5ed452a4f5d, processorArchitecture=MSIL">
+      <HintPath>packages\DirectXTexNet.1.0.0-rc6\lib\netstandard2.0\DirectXTexNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="StbImageSharp, Version=2.22.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\StbImageSharp.2.22.4\lib\net45\StbImageSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="StbImageWriteSharp, Version=1.13.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\StbImageWriteSharp.1.13.3\lib\net45\StbImageWriteSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="About.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="About.Designer.cs">
+      <DependentUpon>About.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BMPImage.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="DisplayImage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DisplayImage.Designer.cs">
+      <DependentUpon>DisplayImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DxtUtil.cs" />
+    <Compile Include="ExportAllTextures.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExportAllTextures.Designer.cs">
+      <DependentUpon>ExportAllTextures.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileFormats\DDS\DDSCAPS2.cs" />
+    <Compile Include="FileFormats\DDS\DDSHeaderCaps.cs" />
+    <Compile Include="FileFormats\DDS\DDSSurfaceDescFlags.cs" />
+    <Compile Include="FileFormats\DDS\DDSPixelFormatFlags.cs" />
+    <Compile Include="FileFormats\DDS\DDSURFACEDESC2.cs" />
+    <Compile Include="FileFormats\DDS\DDS_PIXELFORMAT.cs" />
+    <Compile Include="FileFormats\DDS\DDS_HEADER.cs" />
+    <Compile Include="ExportOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExportOptions.Designer.cs">
+      <DependentUpon>ExportOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectExtensions.cs" />
+    <Compile Include="Option.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelectTextureType.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SelectTextureType.Designer.cs">
+      <DependentUpon>SelectTextureType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Settings.Designer.cs">
+      <DependentUpon>Settings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TargaImage.cs" />
+    <Compile Include="Texture.cs" />
+    <Compile Include="FileFormats\TEX\FileData.cs" />
+    <Compile Include="FileFormats\TEX\TEX.cs" />
+    <Compile Include="FileFormats\TEX\TEXEntry.cs" />
+    <Compile Include="FileFormats\TEX\TEXHeader.cs" />
+    <Compile Include="FileFormats\TGA\ColorMapSpecification.cs" />
+    <Compile Include="FileFormats\TGA\ImageSpecification.cs" />
+    <Compile Include="FileFormats\TGA\TGA.cs" />
+    <Compile Include="FileFormats\TGA\TGAFlags.cs" />
+    <Compile Include="FileFormats\TGA\TGAFooter.cs" />
+    <Compile Include="FileFormats\TGA\TGAHeader.cs" />
+    <Compile Include="TGAImage.cs" />
+    <EmbeddedResource Include="About.resx">
+      <DependentUpon>About.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DisplayImage.resx">
+      <DependentUpon>DisplayImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExportAllTextures.resx">
+      <DependentUpon>ExportAllTextures.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExportOptions.resx">
+      <DependentUpon>ExportOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="SelectTextureType.resx">
+      <DependentUpon>SelectTextureType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Settings.resx">
+      <DependentUpon>Settings.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="packages\DirectXTexNet.1.0.0-rc6\build\DirectXTexNet.targets" Condition="Exists('packages\DirectXTexNet.1.0.0-rc6\build\DirectXTexNet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\DirectXTexNet.1.0.0-rc6\build\DirectXTexNet.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\DirectXTexNet.1.0.0-rc6\build\DirectXTexNet.targets'))" />
+  </Target>
+</Project>
