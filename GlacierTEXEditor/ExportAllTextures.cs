@@ -153,12 +153,19 @@ namespace GlacierTEXEditor
                             var dictionary = options1.ElementAt(i).Value.Extensions;
                             dictionary.Add(extension, new Dictionary<int, string>());
 
-                            List<string> dimensions = GetDimensions(i);
-
-                            for (int j = 0; j < dimensions.Count; j++)
+                            if (Textures[i].NumOfMipMips > 1)
                             {
-                                int width = Convert.ToInt32(dimensions[j].Substring(0, dimensions[j].IndexOf('x')));
-                                dictionary.ElementAt(dictionary.Count - 1).Value.Add(Textures[i].Width / width, dimensions[j]);
+                                List<string> dimensions = GetDimensions(i);
+
+                                for (int j = 0; j < dimensions.Count; j++)
+                                {
+                                    dictionary.ElementAt(dictionary.Count - 1).Value.Add(j, dimensions[j]);
+                                }
+                            }
+                            else
+                            {
+                                string dimensions = Textures[i].Width + "x" + Textures[i].Height;
+                                dictionary.ElementAt(dictionary.Count - 1).Value.Add(0, dimensions);
                             }
                         }
                     }
@@ -177,14 +184,21 @@ namespace GlacierTEXEditor
                         ExportOptions.Add(i, new Option());
 
                         ExportOptions.ElementAt(i).Value.ExportAsSingleFile = true;
-                        ExportOptions.ElementAt(i).Value.Extensions.Add("DDS", new Dictionary<int, string>());
+                        ExportOptions.ElementAt(i).Value.Extensions.Add(".dds", new Dictionary<int, string>());
 
-                        List<string> dimensions = GetDimensions(i);
-
-                        for (int j = 0; j < dimensions.Count; j++)
+                        if (Textures[i].NumOfMipMips > 1)
                         {
-                            int width = Convert.ToInt32(dimensions[j].Substring(0, dimensions[j].IndexOf('x')));
-                            ExportOptions.ElementAt(i).Value.Extensions.ElementAt(0).Value.Add(Textures[i].Width / width, dimensions[j]);
+                            List<string> dimensions = GetDimensions(i);
+
+                            for (int j = 0; j < dimensions.Count; j++)
+                            {
+                                ExportOptions.ElementAt(i).Value.Extensions.ElementAt(0).Value.Add(j, dimensions[j]);
+                            }
+                        }
+                        else
+                        {
+                            string dimensions = Textures[i].Width + "x" + Textures[i].Height;
+                            ExportOptions.ElementAt(i).Value.Extensions.ElementAt(0).Value.Add(0, dimensions);
                         }
                     }
                 }

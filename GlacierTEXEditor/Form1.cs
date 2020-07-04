@@ -138,6 +138,9 @@ namespace GlacierTEXEditor
             tsmiSaveTEX.Enabled = true;
             cmsSaveTEX.Enabled = true;
 
+            tsmiExtractAllFiles.Enabled = true;
+            cmsExtractAllFiles.Enabled = true;
+
             selectedZipPath = cbZipFiles.SelectedItem.ToString();
             filePath = Path.Combine(GetOutputPath(), Path.GetFileNameWithoutExtension(selectedZipPath) + ".TEX");
 
@@ -1393,7 +1396,7 @@ namespace GlacierTEXEditor
                 }
                 else
                 {
-                    SaveToImage(data, texture.Width, texture.Height, exportPath, extension);
+                    SaveToImage(data, width, height, exportPath, extension);
                 }
             }
 
@@ -1683,7 +1686,7 @@ namespace GlacierTEXEditor
             }
             else
             {
-                SaveToImage(data, texture.Width, texture.Height, exportPath, extension);
+                SaveToImage(data, width, height, exportPath, extension);
             }
 
             return true;
@@ -1802,7 +1805,7 @@ namespace GlacierTEXEditor
             }
             else
             {
-                SaveToImage(texture.Data[0], texture.Width, texture.Height, exportPath, extension, StbImageWriteSharp.ColorComponents.Grey);
+                SaveToImage(texture.Data[0], width, height, exportPath, extension, StbImageWriteSharp.ColorComponents.Grey);
             }
 
             return true;
@@ -1922,7 +1925,7 @@ namespace GlacierTEXEditor
             }
             else
             {
-                SaveToImage(colors, texture.Width, texture.Height, exportPath, extension);
+                SaveToImage(colors, width, height, exportPath, extension);
             }
 
             return true;
@@ -2545,6 +2548,8 @@ namespace GlacierTEXEditor
 
         private void ExportAllFiles()
         {
+            toolStripStatusLabel1.Text = "Exporting all textures...";
+
             using (ExportAllTextures exportAllTextures = new ExportAllTextures())
             {
                 exportAllTextures.Textures = textures;
@@ -2552,79 +2557,79 @@ namespace GlacierTEXEditor
 
                 if (dialogResult == DialogResult.OK)
                 {
-                    for (int i = 0; i < exportAllTextures.ExportOptions.Count; i++)
+                    Dictionary<int, Option> options = exportAllTextures.ExportOptions;
+
+                    foreach (KeyValuePair<int, Option> option in options)
                     {
-                        Texture texture = textures[i];
-                        Dictionary<int, Option> options = exportAllTextures.ExportOptions;
+                        Texture texture = textures[option.Key];
 
-                        foreach (KeyValuePair<int, Option> option in options)
+                        foreach (var entry in option.Value.Extensions)
                         {
-                            foreach (var entry in option.Value.Extensions)
+                            string extension = entry.Key;
+                            string exportPath = Path.Combine(exportAllTextures.ExportPath, texture.GetFileName(extension));
+
+                            if (extension.Equals(".dds"))
                             {
-                                string extension = entry.Key;
-                                string exportPath = Path.Combine(exportAllTextures.ExportPath, texture.GetFileName(extension));
-
-                                if (extension.Equals(".dds"))
+                                if (option.Value.ExportAsSingleFile)
                                 {
-                                    if (option.Value.ExportAsSingleFile)
-                                    {
-                                        ExportSelectedOptionsToDDS(texture, entry.Value, texture.Type1, exportPath);
-                                    }
-                                    else
-                                    {
-                                        Dictionary<int, string> paths = GetExportPaths(entry.Value, texture.Width, texture.Height, extension, exportPath);
-
-                                        foreach (KeyValuePair<int, string> entry2 in paths)
-                                        {
-                                            switch (texture.Type1)
-                                            {
-                                                case "DXT1":
-                                                    ExportDXTFile(texture, entry2.Value, entry2.Key);
-                                                    break;
-                                                case "DXT3":
-                                                    ExportDXTFile(texture, entry2.Value, entry2.Key);
-                                                    break;
-                                                case "RGBA":
-                                                    ExportRGBAFile(texture, entry2.Value, entry2.Key);
-                                                    break;
-                                                case "PALN":
-                                                    ExportPALNFile(texture, entry2.Value, entry2.Key);
-                                                    break;
-                                                case "I8  ":
-                                                    ExportI8File(texture, entry2.Value, entry2.Key);
-                                                    break;
-                                                case "U8V8":
-                                                    ExportU8V8File(texture, entry2.Value, entry2.Key);
-                                                    break;
-                                            }
-                                        }
-                                    }
+                                    ExportSelectedOptionsToDDS(texture, entry.Value, texture.Type1, exportPath);
                                 }
                                 else
                                 {
-                                    foreach (var entry2 in entry.Value)
+                                    Dictionary<int, string> paths = GetExportPaths(entry.Value, texture.Width, texture.Height, extension, exportPath);
+
+                                    foreach (KeyValuePair<int, string> entry2 in paths)
                                     {
                                         switch (texture.Type1)
                                         {
                                             case "DXT1":
-                                                ExportDXTFile(texture, exportPath, entry2.Key);
+                                                ExportDXTFile(texture, entry2.Value, entry2.Key);
                                                 break;
                                             case "DXT3":
-                                                ExportDXTFile(texture, exportPath, entry2.Key);
+                                                ExportDXTFile(texture, entry2.Value, entry2.Key);
                                                 break;
                                             case "RGBA":
-                                                ExportRGBAFile(texture, exportPath, entry2.Key);
+                                                ExportRGBAFile(texture, entry2.Value, entry2.Key);
                                                 break;
                                             case "PALN":
-                                                ExportPALNFile(texture, exportPath, entry2.Key);
+                                                ExportPALNFile(texture, entry2.Value, entry2.Key);
                                                 break;
                                             case "I8  ":
-                                                ExportI8File(texture, exportPath, entry2.Key);
+                                                ExportI8File(texture, entry2.Value, entry2.Key);
                                                 break;
                                             case "U8V8":
-                                                ExportU8V8File(texture, exportPath, entry2.Key);
+                                                ExportU8V8File(texture, entry2.Value, entry2.Key);
                                                 break;
                                         }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Dictionary<int, string> paths = GetExportPaths(entry.Value, texture.Width, texture.Height, extension, exportPath);
+
+                                foreach (KeyValuePair<int, string> entry2 in paths)
+                                {
+                                    switch (texture.Type1)
+                                    {
+                                        case "DXT1":
+                                            ExportDXTFile(texture, entry2.Value, entry2.Key);
+                                            break;
+                                        case "DXT3":
+                                            ExportDXTFile(texture, entry2.Value, entry2.Key);
+                                            break;
+                                        case "RGBA":
+                                            ExportRGBAFile(texture, entry2.Value, entry2.Key);
+                                            break;
+                                        case "PALN":
+                                            ExportPALNFile(texture, entry2.Value, entry2.Key);
+                                            break;
+                                        case "I8  ":
+                                            ExportI8File(texture, entry2.Value, entry2.Key);
+                                            break;
+                                        case "U8V8":
+                                            ExportU8V8File(texture, entry2.Value, entry2.Key);
+                                            break;
                                     }
                                 }
                             }
@@ -2632,6 +2637,8 @@ namespace GlacierTEXEditor
                     }
                 }
             }
+
+            toolStripStatusLabel1.Text = "All textures exported successfully.";
         }
 
         private string ReverseTypeText(string type)
@@ -2949,11 +2956,9 @@ namespace GlacierTEXEditor
             {
                 tsmiImportFile.Enabled = true;
                 tsmiExportFile.Enabled = true;
-                tsmiExtractAllFiles.Enabled = true;
 
                 cmsImportFile.Enabled = true;
                 cmsExportFile.Enabled = true;
-                cmsExtractAllFiles.Enabled = true;
             }
         }
 
@@ -3019,6 +3024,11 @@ namespace GlacierTEXEditor
         private void DisplayDXTTexture(Texture texture, int index, int width, int height)
         {
             byte[] data = ConvertDXTToRGBA(texture.Data[index], width, height, texture.Type1);
+
+            byte[] data2 = new byte[data.Length];
+            Array.Copy(data, 0, data2, 0, data.Length);
+
+            ConvertRGBAToBGRA(data, width, height);
             Bitmap bmp = BMPImage.DataToBitmap(data, width, height);
 
             pbTexture.Image = bmp;
@@ -3097,6 +3107,8 @@ namespace GlacierTEXEditor
 
         private void AddZipFiles(string path)
         {
+            toolStripStatusLabel1.Text = "Adding ZIP files.";
+
             List<string> files = Directory.GetFiles(path, "*.zip*", SearchOption.AllDirectories).ToList();
 
             cbZipFiles.Items.Clear();
@@ -3105,6 +3117,8 @@ namespace GlacierTEXEditor
             {
                 cbZipFiles.Items.Add(file);
             }
+
+            toolStripStatusLabel1.Text = "ZIP files added successfully.";
         }
 
         private void BtnCreateTEXFile_Click(object sender, EventArgs e)
