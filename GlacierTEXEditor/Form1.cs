@@ -14,6 +14,7 @@ using StbImageWriteSharp;
 using GlacierTEXEditor.FileFormats;
 using StbImageSharp;
 using DirectXTexNet;
+using System.Diagnostics;
 
 namespace GlacierTEXEditor
 {
@@ -62,6 +63,15 @@ namespace GlacierTEXEditor
             cmsExportFile.Enabled = false;
             cmsExtractAllFiles.Enabled = false;
             cmsSaveTEX.Enabled = false;
+
+            toolStripStatusLabel1.Text = "";
+
+            smoothProgressBar1.ProgressBarBackColor = Color.FromArgb(6, 176, 37);
+            smoothProgressBar1.Maximum = 100;
+
+            lblProgress.Text = "0%";
+
+            progressBar1.Visible = false;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -2559,9 +2569,17 @@ namespace GlacierTEXEditor
                 {
                     Dictionary<int, Option> options = exportAllTextures.ExportOptions;
 
+                    var watch = Stopwatch.StartNew();
+
                     foreach (KeyValuePair<int, Option> option in options)
                     {
                         Texture texture = textures[option.Key];
+
+                        Invoke(new Action(() => smoothProgressBar1.Value += (float)100 / textures.Count));
+                        Invoke(new Action(() => lblProgress.Text = Math.Round(smoothProgressBar1.Value, 2).ToString() + "%"));
+
+                        string remainingTime = "Remaining Time: " + GetRemainingTime(watch, option.Key, options.Count).ToString("mm':'ss");
+                        Invoke(new Action(() => lblRemainingTime.Text = remainingTime));
 
                         foreach (var entry in option.Value.Extensions)
                         {
@@ -2635,10 +2653,10 @@ namespace GlacierTEXEditor
                             }
                         }
                     }
+
+                    watch.Stop();
                 }
             }
-
-            toolStripStatusLabel1.Text = "All textures exported successfully.";
         }
 
         private string ReverseTypeText(string type)
@@ -2658,8 +2676,18 @@ namespace GlacierTEXEditor
 
             List<TEXEntry> entries = new List<TEXEntry>();
 
-            foreach (Texture texture1 in textures)
+            var watch = Stopwatch.StartNew();
+
+            for (int i = 0; i < textures.Count; i++)
             {
+                Texture texture1 = textures[i];
+
+                Invoke(new Action(() => smoothProgressBar1.Value += (float)100 / textures.Count));
+                Invoke(new Action(() => lblProgress.Text = Math.Round(smoothProgressBar1.Value, 2).ToString() + "%"));
+
+                string remainingTime = "Remaining Time: " + GetRemainingTime(watch, i, textures.Count).ToString("mm':'ss");
+                Invoke(new Action(() => lblRemainingTime.Text = remainingTime));
+
                 TEXEntry texEntry = new TEXEntry();
 
                 texEntry.fileSize = (uint)texture1.FileSize;
@@ -2677,12 +2705,12 @@ namespace GlacierTEXEditor
                 texEntry.fileName = data;
                 texEntry.fileData = new List<FileData>();
 
-                for (int i = 0; i < texture1.MipMapLevelSizes.Length; i++)
+                for (int j = 0; j < texture1.MipMapLevelSizes.Length; j++)
                 {
                     FileData fileData = new FileData();
 
-                    fileData.mipMapLevelSize = (uint)texture1.MipMapLevelSizes[i];
-                    fileData.data = texture1.Data[i];
+                    fileData.mipMapLevelSize = (uint)texture1.MipMapLevelSizes[j];
+                    fileData.data = texture1.Data[j];
 
                     texEntry.fileData.Add(fileData);
                 }
@@ -2699,14 +2727,16 @@ namespace GlacierTEXEditor
                     texEntry.indicesCount = (uint)texture1.IndicesCount;
                     texEntry.indices = new uint[texture1.IndicesCount];
 
-                    for (int i = 0; i < texture1.IndicesCount; i++)
+                    for (int j = 0; j < texture1.IndicesCount; j++)
                     {
-                        texEntry.indices[i] = (uint)texture1.Indices[i];
+                        texEntry.indices[j] = (uint)texture1.Indices[j];
                     }
                 }
 
                 entries.Add(texEntry);
             }
+
+            watch.Stop();
 
             texture.entries = entries;
 
@@ -2749,11 +2779,7 @@ namespace GlacierTEXEditor
                             for (int j = 0; j < texture.entries[i].fileData.Count; j++)
                             {
                                 binaryWriter.Write(texture.entries[i].fileData[j].mipMapLevelSize);
-
-                                for (int k = 0; k < texture.entries[i].fileData[j].data.Length; k++)
-                                {
-                                    binaryWriter.Write(texture.entries[i].fileData[j].data[k]);
-                                }
+                                binaryWriter.Write(texture.entries[i].fileData[j].data);
                             }
 
                             string type = ReverseTypeText(new string(texture.entries[i].type1));
@@ -2761,11 +2787,7 @@ namespace GlacierTEXEditor
                             if (type.Equals("PALN"))
                             {
                                 binaryWriter.Write(16);
-
-                                for (int j = 0; j < texture.entries[i].palData.Length; j++)
-                                {
-                                    binaryWriter.Write(texture.entries[i].palData[j]);
-                                }
+                                binaryWriter.Write(texture.entries[i].palData);
                             }
 
                             Align(binaryWriter, 16);
@@ -3131,36 +3153,11 @@ namespace GlacierTEXEditor
             toolStripStatusLabel1.Text = "Creating TEX file...";
             statusStrip1.Update();
 
-            bool created = CreateTEXFile();
-
-            if (created)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(filePath);
-                toolStripStatusLabel1.Text = fileName + " TEX file created sucessfully.";
-
-                savedChanges = true;
-                importedFile = false;
-
-                if (autoUpdateZIP)
-                {
-                    string path = Path.Combine(GetOutputPath(), Path.GetFileNameWithoutExtension(filePath) + "_New.TEX");
-
-                    if (UpdateZIPFile(path))
-                    {
-                        string zipFileName = Path.GetFileNameWithoutExtension(selectedZipPath);
-                        toolStripStatusLabel1.Text = zipFileName + " ZIP file updated sucessfully.";
-
-                        File.Delete(path);
-                    }
-                }
-            }
+            bgwCreateTEX.RunWorkerAsync();
         }
 
         private bool UpdateZIPFile(string path)
         {
-            toolStripStatusLabel1.Text = "Updating ZIP file...";
-            statusStrip1.Update();
-
             try
             {
                 using (FileStream zipToOpen = new FileStream(selectedZipPath, FileMode.Open))
@@ -3197,13 +3194,19 @@ namespace GlacierTEXEditor
                 return;
             }
 
-            if (UpdateZIPFile(path))
-            {
-                string zipFileName = Path.GetFileNameWithoutExtension(selectedZipPath);
-                toolStripStatusLabel1.Text = zipFileName + " ZIP file updated sucessfully.";
+            toolStripStatusLabel1.Text = "Updating ZIP file...";
+            statusStrip1.Update();
 
-                File.Delete(path);
-            }
+            lblRemainingTime.Visible = false;
+            smoothProgressBar1.Visible = false;
+            lblProgress.Visible = false;
+            progressBar1.Location = smoothProgressBar1.Location;
+            progressBar1.Visible = true;
+
+            progressBar1.Style = ProgressBarStyle.Marquee;
+            progressBar1.MarqueeAnimationSpeed = 50;
+
+            bgwUpdateZip.RunWorkerAsync();
         }
 
         private string ShortenPath(string path)
@@ -3378,7 +3381,7 @@ namespace GlacierTEXEditor
 
         private void TsmiExtractAllFiles_Click(object sender, EventArgs e)
         {
-            ExportAllFiles();
+            bgwExportAllFiles.RunWorkerAsync();
         }
 
         private void TsmiExit_Click(object sender, EventArgs e)
@@ -3468,12 +3471,98 @@ namespace GlacierTEXEditor
 
         private void CmsExtractAllFiles_Click(object sender, EventArgs e)
         {
-            ExportAllFiles();
+            bgwExportAllFiles.RunWorkerAsync();
         }
 
         private void CmsExportFile_Click(object sender, EventArgs e)
         {
             ExportFile();
+        }
+
+        private TimeSpan GetRemainingTime(Stopwatch stopwatch, int counter, int counterGoal)
+        {
+            if (counter == 0)
+            {
+                return TimeSpan.Zero;
+            }
+
+            float elapsedMin = (float)stopwatch.ElapsedMilliseconds / 1000 / 60;
+            float minLeft = elapsedMin / counter * (counterGoal - counter);
+            TimeSpan timeSpan = TimeSpan.FromMinutes(minLeft);
+
+            return timeSpan;
+        }
+
+        private void BgwExportAllFiles_DoWork(object sender, DoWorkEventArgs e)
+        {
+            ExportAllFiles();
+        }
+
+        private void BgwExportAllFiles_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            toolStripStatusLabel1.Text = "All textures exported successfully.";
+
+            ResetProgress();
+        }
+
+        private void BgwCreateTEX_DoWork(object sender, DoWorkEventArgs e)
+        {
+            bool created = CreateTEXFile();
+
+            if (created)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(filePath);
+                toolStripStatusLabel1.Text = fileName + " TEX file created sucessfully.";
+
+                savedChanges = true;
+                importedFile = false;
+
+                if (autoUpdateZIP)
+                {
+                    toolStripStatusLabel1.Text = "Updating ZIP file...";
+                    statusStrip1.Update();
+
+                    string path = Path.Combine(GetOutputPath(), Path.GetFileNameWithoutExtension(filePath) + "_New.TEX");
+
+                    if (UpdateZIPFile(path))
+                    {
+                        string zipFileName = Path.GetFileNameWithoutExtension(selectedZipPath);
+                        toolStripStatusLabel1.Text = zipFileName + " ZIP file updated sucessfully.";
+
+                        File.Delete(path);
+                    }
+                }
+            }
+        }
+
+        private void BgwCreateTEX_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            ResetProgress();
+        }
+
+        private void BgwUpdateZip_DoWork(object sender, DoWorkEventArgs e)
+        {
+            string path = Path.Combine(GetOutputPath(), Path.GetFileNameWithoutExtension(filePath) + "_New.TEX");
+
+            if (UpdateZIPFile(path))
+            {
+                string zipFileName = Path.GetFileNameWithoutExtension(selectedZipPath);
+                toolStripStatusLabel1.Text = zipFileName + " ZIP file updated sucessfully.";
+
+                File.Delete(path);
+
+                Invoke(new Action(() => lblRemainingTime.Visible = true));
+                Invoke(new Action(() => smoothProgressBar1.Visible = true));
+                Invoke(new Action(() => lblProgress.Visible = true));
+                Invoke(new Action(() => progressBar1.Visible = false));
+            }
+        }
+
+        private void ResetProgress()
+        {
+            smoothProgressBar1.Value = 0;
+            lblProgress.Text = "0%";
+            lblRemainingTime.Text = "Remaining Time: ";
         }
     }
 }
