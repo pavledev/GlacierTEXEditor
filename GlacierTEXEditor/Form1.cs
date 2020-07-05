@@ -3079,8 +3079,17 @@ namespace GlacierTEXEditor
                     if (index >= texture.Data.Length)
                     {
                         index = 0;
+                        Bitmap bitmap;
 
-                        Bitmap bitmap = BMPImage.DataToBitmap(texture.Data[0], texture.Width, texture.Height);
+                        if (texture.Type1.Equals("I8  "))
+                        {
+                            bitmap = BMPImage.DataToBitmap(texture.Data[0], texture.Width, texture.Height, PixelFormat.Format8bppIndexed);
+                        }
+                        else
+                        {
+                            bitmap = BMPImage.DataToBitmap(texture.Data[0], texture.Width, texture.Height);
+                        }
+
                         Bitmap resized = new Bitmap(bitmap, new Size(width, height));
                         textureData = BMPImage.BitmapToData(resized);
                     }
