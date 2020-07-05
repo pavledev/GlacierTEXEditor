@@ -18,8 +18,9 @@ namespace GlacierTEXEditor
         private bool checkSelectedDimensions = false;
         private int previousIndex = 0;
         private readonly List<string> extensions = new List<string>() { ".dds", ".tga", ".bmp", ".png", ".jpg" };
+        private Form1 form1;
 
-        public ExportAllTextures()
+        public ExportAllTextures(Form1 form1)
         {
             InitializeComponent();
 
@@ -51,6 +52,8 @@ namespace GlacierTEXEditor
             chkExportAsSingleFile.Visible = false;
 
             ExportPath = Path.GetDirectoryName(Application.ExecutablePath) + @"\";
+
+            this.form1 = form1;
         }
 
         public List<Texture> Textures
@@ -426,18 +429,9 @@ namespace GlacierTEXEditor
 
         private void BtnChangeExportPath_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+            Invoke(new Action(() => ExportPath = form1.ShowOpenFileDialog()));
 
-            openFileDialog.ValidateNames = false;
-            openFileDialog.CheckFileExists = false;
-            openFileDialog.CheckPathExists = true;
-            openFileDialog.FileName = "Folder Selection.";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                ExportPath = Path.GetDirectoryName(openFileDialog.FileName);
-                txtExportPath.Text = ExportPath;
-            }
+            txtExportPath.Text = ExportPath;
         }
 
         private void CheckBox_CheckedChanged(object sender, EventArgs e)

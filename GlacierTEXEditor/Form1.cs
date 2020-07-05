@@ -124,6 +124,27 @@ namespace GlacierTEXEditor
             }
         }
 
+        public string ShowOpenFileDialog()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            openFileDialog.ValidateNames = false;
+            openFileDialog.CheckFileExists = false;
+            openFileDialog.CheckPathExists = true;
+            openFileDialog.FileName = "Folder Selection.";
+
+            DialogResult dialogResult = DialogResult.Cancel;
+
+            Invoke(new Action(() => dialogResult = openFileDialog.ShowDialog()));
+
+            if (dialogResult == DialogResult.OK)
+            {
+                return Path.GetDirectoryName(openFileDialog.FileName);
+            }
+
+            return null;
+        }
+
         private void BtnChangeDirectory_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -2560,7 +2581,7 @@ namespace GlacierTEXEditor
         {
             toolStripStatusLabel1.Text = "Exporting all textures...";
 
-            using (ExportAllTextures exportAllTextures = new ExportAllTextures())
+            using (ExportAllTextures exportAllTextures = new ExportAllTextures(this))
             {
                 exportAllTextures.Textures = textures;
                 DialogResult dialogResult = exportAllTextures.ShowDialog();
