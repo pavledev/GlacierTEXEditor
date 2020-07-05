@@ -1590,6 +1590,23 @@ namespace GlacierTEXEditor
             return paths;
         }
 
+        private byte[][] GetPALNPalette(byte[] palData, int paletteSize)
+        {
+            byte[][] colors = new byte[paletteSize][];
+
+            for (int i = 0; i < paletteSize; i++)
+            {
+                colors[i] = new byte[4];
+
+                colors[i][0] = palData[i * 4];
+                colors[i][1] = palData[i * 4 + 1];
+                colors[i][2] = palData[i * 4 + 2];
+                colors[i][3] = palData[i * 4 + 3];
+            }
+
+            return colors;
+        }
+
         private byte[][] GetPALNPalette(Texture texture)
         {
             byte[][] colors = new byte[texture.PaletteSize][];
@@ -1613,6 +1630,25 @@ namespace GlacierTEXEditor
             byte[] data = new byte[texture.Width * texture.Height * 4];
             byte[][] palette = GetPALNPalette(texture);
             byte[] palnData = texture.Data[index];
+
+            for (int i = 0; i < palnData.Length; i++)
+            {
+                byte[] colorBytes = palette[palnData[i]];
+
+                data[n * 4] = colorBytes[0];
+                data[n * 4 + 1] = colorBytes[1];
+                data[n * 4 + 2] = colorBytes[2];
+                data[n++ * 4 + 3] = colorBytes[3];
+            }
+
+            return data;
+        }
+
+        private byte[] GetColorsFromPALNRefs(byte[] palnData, int width, int height, int paletteSize)
+        {
+            int n = 0;
+            byte[] data = new byte[width * height * 4];
+            byte[][] palette = GetPALNPalette(palnData, paletteSize);
 
             for (int i = 0; i < palnData.Length; i++)
             {
@@ -3019,54 +3055,75 @@ namespace GlacierTEXEditor
 
         private void DisplayTexture(Texture texture)
         {
-            int index = 0;
-
-            int width = texture.Width;
-            int height = texture.Height;
-
-            if (texture.Width > pbTexture.Width || texture.Height > pbTexture.Height)
+            try
             {
-                while (width > pbTexture.Width || height > pbTexture.Height)
-                {
-                    width /= 2;
-                    height /= 2;
+                int index = 0;
 
-                    index++;
+                int width = texture.Width;
+                int height = texture.Height;
+                byte[] textureData = texture.Data[0];
+
+                if (texture.Width > pbTexture.Width || texture.Height > pbTexture.Height)
+                {
+                    while (width > pbTexture.Width || height > pbTexture.Height)
+                    {
+                        width /= 2;
+                        height /= 2;
+
+                        index++;
+                    }
+
+                    width = texture.Width / (int)Math.Pow(2, index);
+                    height = texture.Height / (int)Math.Pow(2, index);
+
+                    if (index >= texture.Data.Length)
+                    {
+                        index = 0;
+
+                        Bitmap bitmap = BMPImage.DataToBitmap(texture.Data[0], texture.Width, texture.Height);
+                        Bitmap resized = new Bitmap(bitmap, new Size(width, height));
+                        textureData = BMPImage.BitmapToData(resized);
+                    }
+                    else
+                    {
+                        textureData = texture.Data[index];
+                    }
                 }
 
-                width = texture.Width / (int)Math.Pow(2, index);
-                height = texture.Height / (int)Math.Pow(2, index);
+                switch (texture.Type1)
+                {
+                    case "DXT1":
+                        DisplayDXTTexture(textureData, width, height, texture.Type1);
+                        break;
+                    case "DXT3":
+                        DisplayDXTTexture(textureData, width, height, texture.Type1);
+                        break;
+                    case "RGBA":
+                        DisplayRGBATexture(textureData, width, height);
+                        break;
+                    case "PALN":
+                        DisplayPALNTexture(textureData, width, height, texture.PaletteSize);
+                        break;
+                    case "I8  ":
+                        DisplayI8Texture(textureData, width, height);
+                        break;
+                    case "U8V8":
+                        DisplayU8V8Texture(textureData, width, height);
+                        break;
+                    default:
+                        MessageBox.Show("Unknown texture type.", "Glacier TEX Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                }
             }
-
-            switch (texture.Type1)
+            catch (Exception ex)
             {
-                case "DXT1":
-                    DisplayDXTTexture(texture, index, width, height);
-                    break;
-                case "DXT3":
-                    DisplayDXTTexture(texture, index, width, height);
-                    break;
-                case "RGBA":
-                    DisplayRGBATexture(texture, index, width, height);
-                    break;
-                case "PALN":
-                    DisplayPALNTexture(texture, index, width, height);
-                    break;
-                case "I8  ":
-                    DisplayI8Texture(texture, index, width, height);
-                    break;
-                case "U8V8":
-                    DisplayU8V8Texture(texture, index, width, height);
-                    break;
-                default:
-                    MessageBox.Show("Unknown texture type.", "Glacier TEX Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                MessageBox.Show(ex.Message);
             }
         }
 
-        private void DisplayDXTTexture(Texture texture, int index, int width, int height)
+        private void DisplayDXTTexture(byte[] textureData, int width, int height, string type)
         {
-            byte[] data = ConvertDXTToRGBA(texture.Data[index], width, height, texture.Type1);
+            byte[] data = ConvertDXTToRGBA(textureData, width, height, type);
 
             byte[] data2 = new byte[data.Length];
             Array.Copy(data, 0, data2, 0, data.Length);
@@ -3109,11 +3166,11 @@ namespace GlacierTEXEditor
             }
         }
 
-        private void DisplayRGBATexture(Texture texture, int index, int width, int height)
+        private void DisplayRGBATexture(byte[] textureData, int width, int height)
         {
-            int length = texture.Data[index].Length;
+            int length = textureData.Length;
             byte[] data = new byte[length];
-            Array.Copy(texture.Data[index], 0, data, 0, length);
+            Array.Copy(textureData, 0, data, 0, length);
 
             ConvertRGBAToBGRA(data, width, height);
             Bitmap bmp = BMPImage.DataToBitmap(data, width, height);
@@ -3121,9 +3178,9 @@ namespace GlacierTEXEditor
             pbTexture.Image = bmp;
         }
 
-        private void DisplayPALNTexture(Texture texture, int index, int width, int height)
+        private void DisplayPALNTexture(byte[] textureData, int width, int height, int paletteSize)
         {
-            byte[] data = GetColorsFromPALNRefs(texture, index);
+            byte[] data = GetColorsFromPALNRefs(textureData, width, height, paletteSize);
             ConvertRGBAToBGRA(data, width, height);
 
             Bitmap bmp = BMPImage.DataToBitmap(data, width, height);
@@ -3131,18 +3188,16 @@ namespace GlacierTEXEditor
             pbTexture.Image = BMPImage.ReplaceTransparency(bmp, Color.Black);
         }
 
-        private void DisplayI8Texture(Texture texture, int index, int width, int height)
+        private void DisplayI8Texture(byte[] textureData, int width, int height)
         {
-            byte[] data = texture.Data[index];
-            Bitmap bmp = BMPImage.DataToBitmap(data, width, height, PixelFormat.Format8bppIndexed);
+            Bitmap bmp = BMPImage.DataToBitmap(textureData, width, height, PixelFormat.Format8bppIndexed);
 
             pbTexture.Image = bmp;
         }
 
-        private void DisplayU8V8Texture(Texture texture, int index, int width, int height)
+        private void DisplayU8V8Texture(byte[] textureData, int width, int height)
         {
-            byte[] data = texture.Data[index];
-            byte[] colors = ConvertU8V8ToBGRA(data);
+            byte[] colors = ConvertU8V8ToBGRA(textureData);
             Bitmap bmp = BMPImage.DataToBitmap(colors, width, height);
 
             pbTexture.Image = bmp;
