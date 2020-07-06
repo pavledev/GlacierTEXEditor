@@ -3203,12 +3203,6 @@ namespace GlacierTEXEditor
             }
         }
 
-        private void DisplayDXTTexture(byte[] textureData, int width, int height, string type)
-        {
-            Bitmap bmp = ConvertDXTToBitmap(textureData, width, height, type);
-            pbTexture.Image = bmp;
-        }
-
         private void ConvertRGBAToBGRA(byte[] data, int width, int height)
         {
             for (int i = 0; i < width * height; i++)
@@ -3239,30 +3233,6 @@ namespace GlacierTEXEditor
                 data[i * 4 + 2] = b;
                 data[i * 4 + 3] = a;
             }
-        }
-
-        private void DisplayRGBATexture(byte[] textureData, int width, int height)
-        {
-            Bitmap bmp = ConvertRGBAToBitmap(textureData, width, height);
-            pbTexture.Image = bmp;
-        }
-
-        private void DisplayPALNTexture(byte[] textureData, int width, int height, int paletteSize)
-        {
-            Bitmap bmp = ConvertPALNToBitmap(textureData, width, height, paletteSize);
-            pbTexture.Image = BMPImage.ReplaceTransparency(bmp, Color.Black);
-        }
-
-        private void DisplayI8Texture(byte[] textureData, int width, int height)
-        {
-            Bitmap bmp = ConvertI8ToBitmap(textureData, width, height);
-            pbTexture.Image = bmp;
-        }
-
-        private void DisplayU8V8Texture(byte[] textureData, int width, int height)
-        {
-            Bitmap bmp = ConvertU8V8ToBitmap(textureData, width, height);
-            pbTexture.Image = bmp;
         }
 
         private void AddZipFiles(string path)
