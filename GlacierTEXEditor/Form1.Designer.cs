@@ -84,11 +84,18 @@
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiUndo = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRedo = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiOptions = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.btnCreateTEXFile = new System.Windows.Forms.Button();
-            this.tsmiOptions = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this.lblRemainingTime = new System.Windows.Forms.Label();
+            this.lblProgress = new System.Windows.Forms.Label();
+            this.bgwExportAllFiles = new System.ComponentModel.BackgroundWorker();
+            this.bgwCreateTEX = new System.ComponentModel.BackgroundWorker();
+            this.bgwUpdateZip = new System.ComponentModel.BackgroundWorker();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.smoothProgressBar1 = new GlacierTEXEditor.SmoothProgressBar();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbTexture)).BeginInit();
             this.grpTextureTypes.SuspendLayout();
@@ -440,7 +447,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 501);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 564);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(1394, 22);
             this.statusStrip1.TabIndex = 22;
@@ -570,16 +577,31 @@
             // tsmiUndo
             // 
             this.tsmiUndo.Name = "tsmiUndo";
-            this.tsmiUndo.Size = new System.Drawing.Size(180, 22);
+            this.tsmiUndo.Size = new System.Drawing.Size(142, 22);
             this.tsmiUndo.Text = "Undo Import";
             this.tsmiUndo.Click += new System.EventHandler(this.TsmiUndo_Click);
             // 
             // tsmiRedo
             // 
             this.tsmiRedo.Name = "tsmiRedo";
-            this.tsmiRedo.Size = new System.Drawing.Size(180, 22);
+            this.tsmiRedo.Size = new System.Drawing.Size(142, 22);
             this.tsmiRedo.Text = "Redo Import";
             this.tsmiRedo.Click += new System.EventHandler(this.TsmiRedo_Click);
+            // 
+            // tsmiOptions
+            // 
+            this.tsmiOptions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiSettings});
+            this.tsmiOptions.Name = "tsmiOptions";
+            this.tsmiOptions.Size = new System.Drawing.Size(61, 20);
+            this.tsmiOptions.Text = "Options";
+            // 
+            // tsmiSettings
+            // 
+            this.tsmiSettings.Name = "tsmiSettings";
+            this.tsmiSettings.Size = new System.Drawing.Size(125, 22);
+            this.tsmiSettings.Text = "Settings...";
+            this.tsmiSettings.Click += new System.EventHandler(this.TsmiSettings_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -592,7 +614,7 @@
             // tsmiAbout
             // 
             this.tsmiAbout.Name = "tsmiAbout";
-            this.tsmiAbout.Size = new System.Drawing.Size(180, 22);
+            this.tsmiAbout.Size = new System.Drawing.Size(116, 22);
             this.tsmiAbout.Text = "About...";
             this.tsmiAbout.Click += new System.EventHandler(this.TsmiAbout_Click);
             // 
@@ -607,26 +629,68 @@
             this.btnCreateTEXFile.UseVisualStyleBackColor = true;
             this.btnCreateTEXFile.Click += new System.EventHandler(this.BtnCreateTEXFile_Click);
             // 
-            // tsmiOptions
+            // lblRemainingTime
             // 
-            this.tsmiOptions.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiSettings});
-            this.tsmiOptions.Name = "tsmiOptions";
-            this.tsmiOptions.Size = new System.Drawing.Size(61, 20);
-            this.tsmiOptions.Text = "Options";
+            this.lblRemainingTime.AutoSize = true;
+            this.lblRemainingTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRemainingTime.Location = new System.Drawing.Point(8, 506);
+            this.lblRemainingTime.Name = "lblRemainingTime";
+            this.lblRemainingTime.Size = new System.Drawing.Size(127, 20);
+            this.lblRemainingTime.TabIndex = 28;
+            this.lblRemainingTime.Text = "Remaining Time:";
             // 
-            // tsmiSettings
+            // lblProgress
             // 
-            this.tsmiSettings.Name = "tsmiSettings";
-            this.tsmiSettings.Size = new System.Drawing.Size(180, 22);
-            this.tsmiSettings.Text = "Settings...";
-            this.tsmiSettings.Click += new System.EventHandler(this.TsmiSettings_Click);
+            this.lblProgress.AutoSize = true;
+            this.lblProgress.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblProgress.Location = new System.Drawing.Point(559, 532);
+            this.lblProgress.Name = "lblProgress";
+            this.lblProgress.Size = new System.Drawing.Size(60, 24);
+            this.lblProgress.TabIndex = 29;
+            this.lblProgress.Text = "label2";
+            // 
+            // bgwExportAllFiles
+            // 
+            this.bgwExportAllFiles.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BgwExportAllFiles_DoWork);
+            this.bgwExportAllFiles.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BgwExportAllFiles_RunWorkerCompleted);
+            // 
+            // bgwCreateTEX
+            // 
+            this.bgwCreateTEX.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BgwCreateTEX_DoWork);
+            this.bgwCreateTEX.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BgwCreateTEX_RunWorkerCompleted);
+            // 
+            // bgwUpdateZip
+            // 
+            this.bgwUpdateZip.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BgwUpdateZip_DoWork);
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(651, 529);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(541, 32);
+            this.progressBar1.TabIndex = 0;
+            // 
+            // smoothProgressBar1
+            // 
+            this.smoothProgressBar1.Location = new System.Drawing.Point(12, 529);
+            this.smoothProgressBar1.Maximum = 100F;
+            this.smoothProgressBar1.Minimum = 0F;
+            this.smoothProgressBar1.Name = "smoothProgressBar1";
+            this.smoothProgressBar1.ProgressBarBackColor = System.Drawing.Color.Blue;
+            this.smoothProgressBar1.Size = new System.Drawing.Size(541, 32);
+            this.smoothProgressBar1.TabIndex = 27;
+            this.smoothProgressBar1.TextColor = System.Drawing.Color.Black;
+            this.smoothProgressBar1.Value = 0F;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1394, 523);
+            this.ClientSize = new System.Drawing.Size(1394, 586);
+            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.lblProgress);
+            this.Controls.Add(this.lblRemainingTime);
+            this.Controls.Add(this.smoothProgressBar1);
             this.Controls.Add(this.btnCreateTEXFile);
             this.Controls.Add(this.btnUpdateZipFile);
             this.Controls.Add(this.statusStrip1);
@@ -722,6 +786,13 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiSaveTEX;
         private System.Windows.Forms.ToolStripMenuItem tsmiOptions;
         private System.Windows.Forms.ToolStripMenuItem tsmiSettings;
+        private SmoothProgressBar smoothProgressBar1;
+        private System.Windows.Forms.Label lblRemainingTime;
+        private System.Windows.Forms.Label lblProgress;
+        private System.ComponentModel.BackgroundWorker bgwExportAllFiles;
+        private System.ComponentModel.BackgroundWorker bgwCreateTEX;
+        private System.ComponentModel.BackgroundWorker bgwUpdateZip;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

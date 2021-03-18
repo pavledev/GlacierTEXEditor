@@ -26,6 +26,7 @@ namespace GlacierTEXEditor
         private List<Texture> textures = new List<Texture>();
         private Dictionary<int, List<Texture>> texturesBackup = new Dictionary<int, List<Texture>>();
         private int countOfEmptyOffsets = 0;
+        private List<string> zipFiles = new List<string>();
 
         private int entriesCount = 0;
         private Dictionary<string, int> entryTypesCount = new Dictionary<string, int>();
@@ -36,6 +37,7 @@ namespace GlacierTEXEditor
         private Configuration configuration = new Configuration();
         private bool autoUpdateZIP = false;
         private CompressionLevel compressionLevel;
+        private GameVersion gameVersion;
 
         public Form1()
         {
@@ -108,6 +110,15 @@ namespace GlacierTEXEditor
                 compressionLevel = configuration.GetCompressionLevel();
             }
 
+            if (!configuration.CheckIfGameVersionExists())
+            {
+                configuration.WriteGameVersion("PC");
+            }
+            else
+            {
+                gameVersion = configuration.GetGameVersion();
+            }
+
             if (!configuration.CheckIfAutoUpdateZIPExists())
             {
                 configuration.SetAutoUpdateZIP(false);
@@ -172,7 +183,7 @@ namespace GlacierTEXEditor
             tsmiExtractAllFiles.Enabled = true;
             cmsExtractAllFiles.Enabled = true;
 
-            selectedZipPath = cbZipFiles.SelectedItem.ToString();
+            selectedZipPath = zipFiles[cbZipFiles.SelectedIndex];
             filePath = Path.Combine(GetOutputPath(), Path.GetFileNameWithoutExtension(selectedZipPath) + ".TEX");
 
             ExtractZipFile(filePath);
@@ -185,7 +196,7 @@ namespace GlacierTEXEditor
             {
                 using (ZipArchive archive = ZipFile.OpenRead(selectedZipPath))
                 {
-                    ZipArchiveEntry zipArchiveEntry = archive.Entries.Where(entry => entry.Name.EndsWith(".TEX")).FirstOrDefault();
+                    ZipArchiveEntry zipArchiveEntry = archive.Entries.Where(entry => entry.Name.ToUpper().EndsWith(".TEX")).FirstOrDefault();
 
                     if (File.Exists(extractPath))
                     {
@@ -229,18 +240,33 @@ namespace GlacierTEXEditor
             {
                 using (BinaryReader binaryReader = new BinaryReader(fileStream))
                 {
-                    tex.texHeader.table1Offset = binaryReader.ReadUInt32();
-                    tex.texHeader.table2Offset = binaryReader.ReadUInt32();
-                    tex.texHeader.unk1 = binaryReader.ReadUInt32();
-                    tex.texHeader.unk2 = binaryReader.ReadUInt32();
-
-                    fileStream.Seek(tex.texHeader.table1Offset, SeekOrigin.Begin);
-
-                    tex.table1Offsets = new uint[2048];
-
-                    for (int i = 0; i < tex.table1Offsets.Length; i++)
+                    if (gameVersion != GameVersion.PS4)
                     {
-                        tex.table1Offsets[i] = binaryReader.ReadUInt32();
+                        tex.texHeader.table1Offset = binaryReader.ReadUInt32();
+                        tex.texHeader.table2Offset = binaryReader.ReadUInt32();
+                        tex.texHeader.unk1 = binaryReader.ReadUInt32();
+                        tex.texHeader.unk2 = binaryReader.ReadUInt32();
+
+                        fileStream.Seek(tex.texHeader.table1Offset, SeekOrigin.Begin);
+
+                        tex.table1Offsets = new uint[2048];
+
+                        for (int i = 0; i < tex.table1Offsets.Length; i++)
+                        {
+                            tex.table1Offsets[i] = binaryReader.ReadUInt32();
+                        }
+                    }
+                    else
+                    {
+                        fileStream.Seek(0x210, SeekOrigin.Begin);
+
+                        int offsetsCount = (0x2010 - 0x210) / 4;
+                        tex.table1Offsets = new uint[offsetsCount];
+
+                        for (int i = 0; i < tex.table1Offsets.Length; i++)
+                        {
+                            tex.table1Offsets[i] = binaryReader.ReadUInt32();
+                        }
                     }
 
                     tex.entries = new List<TEXEntry>();
@@ -322,51 +348,54 @@ namespace GlacierTEXEditor
                         }
                     }
 
-                    fileStream.Seek(tex.texHeader.table2Offset, SeekOrigin.Begin);
-
-                    tex.table2Offsets = new uint[2048];
-
-                    for (int i = 0; i < tex.table2Offsets.Length; i++)
+                    if (gameVersion != GameVersion.PS4)
                     {
-                        tex.table2Offsets[i] = binaryReader.ReadUInt32();
-                        long position = binaryReader.BaseStream.Position;
+                        fileStream.Seek(tex.texHeader.table2Offset, SeekOrigin.Begin);
 
-                        if (tex.table2Offsets[i] != 0)
+                        tex.table2Offsets = new uint[2048];
+
+                        for (int i = 0; i < tex.table2Offsets.Length; i++)
                         {
-                            fileStream.Seek(tex.table2Offsets[i], SeekOrigin.Begin);
+                            tex.table2Offsets[i] = binaryReader.ReadUInt32();
+                            long position = binaryReader.BaseStream.Position;
 
-                            int indicesCount = binaryReader.ReadInt32();
-                            int[] indices = new int[indicesCount];
-
-                            for (int j = 0; j < indices.Length; j++)
+                            if (tex.table2Offsets[i] != 0)
                             {
-                                indices[j] = binaryReader.ReadInt32();
-                            }
+                                fileStream.Seek(tex.table2Offsets[i], SeekOrigin.Begin);
 
-                            int index = 0;
+                                int indicesCount = binaryReader.ReadInt32();
+                                int[] indices = new int[indicesCount];
 
-                            if (indices[indices.Length - 1] == 0)
-                            {
-                                for (int j = indices.Length - 1; j >= 0; j--)
+                                for (int j = 0; j < indices.Length; j++)
                                 {
-                                    if (indices[j] > 0)
+                                    indices[j] = binaryReader.ReadInt32();
+                                }
+
+                                int index = 0;
+
+                                if (indices[indices.Length - 1] == 0)
+                                {
+                                    for (int j = indices.Length - 1; j >= 0; j--)
                                     {
-                                        index = indices[j] - countOfEmptyOffsets;
-                                        break;
+                                        if (indices[j] > 0)
+                                        {
+                                            index = indices[j] - countOfEmptyOffsets;
+                                            break;
+                                        }
                                     }
                                 }
+                                else
+                                {
+                                    index = indices[indices.Length - 1] - countOfEmptyOffsets;
+                                }
+
+                                textures[index].IndicesCount = indicesCount;
+                                textures[index].Indices = new int[indicesCount];
+
+                                Array.Copy(indices, 0, textures[index].Indices, 0, indicesCount);
+
+                                fileStream.Seek(position, SeekOrigin.Begin);
                             }
-                            else
-                            {
-                                index = indices[indices.Length - 1] - countOfEmptyOffsets;
-                            }
-
-                            textures[index].IndicesCount = indicesCount;
-                            textures[index].Indices = new int[indicesCount];
-
-                            Array.Copy(indices, 0, textures[index].Indices, 0, indicesCount);
-
-                            fileStream.Seek(position, SeekOrigin.Begin);
                         }
                     }
                 }
@@ -2728,8 +2757,11 @@ namespace GlacierTEXEditor
         {
             TEX texture = new TEX();
 
-            texture.texHeader.unk1 = tex.texHeader.unk1;
-            texture.texHeader.unk2 = tex.texHeader.unk2;
+            if (gameVersion != GameVersion.PS4)
+            {
+                texture.texHeader.unk1 = tex.texHeader.unk1;
+                texture.texHeader.unk2 = tex.texHeader.unk2;
+            }
 
             List<TEXEntry> entries = new List<TEXEntry>();
 
@@ -2806,10 +2838,27 @@ namespace GlacierTEXEditor
                 {
                     using (BinaryWriter binaryWriter = new BinaryWriter(fs))
                     {
-                        binaryWriter.Write(0);
-                        binaryWriter.Write(0);
-                        binaryWriter.Write(texture.texHeader.unk1);
-                        binaryWriter.Write(texture.texHeader.unk2);
+                        if (gameVersion != GameVersion.PS4)
+                        {
+                            binaryWriter.Write(0);
+                            binaryWriter.Write(0);
+                            binaryWriter.Write(texture.texHeader.unk1);
+                            binaryWriter.Write(texture.texHeader.unk2);
+                        }
+                        else
+                        {
+                            binaryWriter.Write(10);
+                            binaryWriter.Write(2);
+                            binaryWriter.Write(3);
+                            binaryWriter.Write(4);
+
+                            int count = (0x210 - 0x10) / 4;
+
+                            for (int i = 0; i < count; i++)
+                            {
+                                binaryWriter.Write(0);
+                            }
+                        }
 
                         for (int i = 0; i < texture.entries.Count; i++)
                         {
@@ -2875,49 +2924,56 @@ namespace GlacierTEXEditor
 
                         texture.texHeader.table1Offset = (uint)table1Offset;
                         texture.table1Offsets = new uint[tex.table1Offsets.Length];
-                        texture.table2Offsets = new uint[tex.table2Offsets.Length];
+
+                        if (gameVersion != GameVersion.PS4)
+                        {
+                            texture.table2Offsets = new uint[tex.table2Offsets.Length];
+                        }
 
                         for (int i = 0; i < textures.Count; i++)
                         {
                             texture.table1Offsets[i + countOfEmptyOffsets] = (uint)textures[i].Offset;
                         }
 
-                        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                        if (gameVersion != GameVersion.PS4)
                         {
-                            using (BinaryReader binaryReader = new BinaryReader(fileStream))
+                            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                             {
-                                for (int i = 0; i < tex.table2Offsets.Length; i++)
+                                using (BinaryReader binaryReader = new BinaryReader(fileStream))
                                 {
-                                    if (tex.table2Offsets[i] != 0)
+                                    for (int i = 0; i < tex.table2Offsets.Length; i++)
                                     {
-                                        fileStream.Seek(tex.table2Offsets[i], SeekOrigin.Begin);
-                                        int indicesCount = binaryReader.ReadInt32();
-                                        int[] indices = new int[indicesCount];
-
-                                        for (int j = 0; j < indices.Length; j++)
+                                        if (tex.table2Offsets[i] != 0)
                                         {
-                                            indices[j] = binaryReader.ReadInt32();
-                                        }
+                                            fileStream.Seek(tex.table2Offsets[i], SeekOrigin.Begin);
+                                            int indicesCount = binaryReader.ReadInt32();
+                                            int[] indices = new int[indicesCount];
 
-                                        int index = 0;
-
-                                        if (indices[indices.Length - 1] == 0)
-                                        {
-                                            for (int j = indices.Length - 1; j >= 0; j--)
+                                            for (int j = 0; j < indices.Length; j++)
                                             {
-                                                if (indices[j] > 0)
+                                                indices[j] = binaryReader.ReadInt32();
+                                            }
+
+                                            int index = 0;
+
+                                            if (indices[indices.Length - 1] == 0)
+                                            {
+                                                for (int j = indices.Length - 1; j >= 0; j--)
                                                 {
-                                                    index = indices[j] - countOfEmptyOffsets;
-                                                    break;
+                                                    if (indices[j] > 0)
+                                                    {
+                                                        index = indices[j] - countOfEmptyOffsets;
+                                                        break;
+                                                    }
                                                 }
                                             }
-                                        }
-                                        else
-                                        {
-                                            index = indices[indices.Length - 1] - countOfEmptyOffsets;
-                                        }
+                                            else
+                                            {
+                                                index = indices[indices.Length - 1] - countOfEmptyOffsets;
+                                            }
 
-                                        texture.table2Offsets[i] = (uint)textures[index].IndicesOffset;
+                                            texture.table2Offsets[i] = (uint)textures[index].IndicesOffset;
+                                        }
                                     }
                                 }
                             }
@@ -2928,16 +2984,19 @@ namespace GlacierTEXEditor
                             binaryWriter.Write(texture.table1Offsets[i]);
                         }
 
-                        texture.texHeader.table2Offset = (uint)binaryWriter.BaseStream.Position;
-
-                        for (int i = 0; i < texture.table2Offsets.Length; i++)
+                        if (gameVersion != GameVersion.PS4)
                         {
-                            binaryWriter.Write(texture.table2Offsets[i]);
-                        }
+                            texture.texHeader.table2Offset = (uint)binaryWriter.BaseStream.Position;
 
-                        fs.Seek(0, SeekOrigin.Begin);
-                        binaryWriter.Write(texture.texHeader.table1Offset);
-                        binaryWriter.Write(texture.texHeader.table2Offset);
+                            for (int i = 0; i < texture.table2Offsets.Length; i++)
+                            {
+                                binaryWriter.Write(texture.table2Offsets[i]);
+                            }
+
+                            fs.Seek(0, SeekOrigin.Begin);
+                            binaryWriter.Write(texture.texHeader.table1Offset);
+                            binaryWriter.Write(texture.texHeader.table2Offset);
+                        }
                     }
                 }
             }
@@ -3170,7 +3229,7 @@ namespace GlacierTEXEditor
                     }
                 }
 
-                Bitmap bitmap;
+                Bitmap bitmap = null;
 
                 switch (texture.Type1)
                 {
@@ -3196,6 +3255,8 @@ namespace GlacierTEXEditor
                         MessageBox.Show("Unknown texture type.", "Glacier TEX Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         break;
                 }
+
+                pbTexture.Image = bitmap;
             }
             catch (Exception ex)
             {
@@ -3239,13 +3300,13 @@ namespace GlacierTEXEditor
         {
             toolStripStatusLabel1.Text = "Adding ZIP files.";
 
-            List<string> files = Directory.GetFiles(path, "*.zip*", SearchOption.AllDirectories).ToList();
+            zipFiles = Directory.GetFiles(path, "*.zip*", SearchOption.AllDirectories).ToList();
 
             cbZipFiles.Items.Clear();
 
-            foreach (string file in files)
+            foreach (string file in zipFiles)
             {
-                cbZipFiles.Items.Add(file);
+                cbZipFiles.Items.Add(new FileInfo(file).Name);
             }
 
             toolStripStatusLabel1.Text = "ZIP files added successfully.";
@@ -3562,6 +3623,7 @@ namespace GlacierTEXEditor
                 if (dialogResult == DialogResult.OK)
                 {
                     compressionLevel = settings.CompressionLvl;
+                    gameVersion = settings.GameVersion;
                     autoUpdateZIP = settings.UpdateZIPAutomatically;
                 }
             }

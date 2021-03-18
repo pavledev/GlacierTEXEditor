@@ -359,5 +359,94 @@ namespace GlacierTEXEditor
                 MessageBox.Show(ex.Message, "Glacier TEX Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        public GameVersion GetGameVersion()
+        {
+            GameVersion gameVersion = GameVersion.PC;
+
+            try
+            {
+                List<string> lines = File.ReadAllLines("GlacierTEXEditor.ini").ToList();
+                string line = lines.Where(l => l.StartsWith("GameVersion")).FirstOrDefault();
+
+                if (line != null)
+                {
+                    string version = line.Substring(line.IndexOf('=') + 1);
+
+                    if (version.Equals("PC"))
+                    {
+                        gameVersion = GameVersion.PC;
+                    }
+                    else if (version.Equals("PS2"))
+                    {
+                        gameVersion = GameVersion.PS2;
+                    }
+                    else if (version.Equals("PS3"))
+                    {
+                        gameVersion = GameVersion.PS3;
+                    }
+                    else if (version.Equals("PS4"))
+                    {
+                        gameVersion = GameVersion.PS4;
+                    }
+                    else if (version.Equals("XBOX"))
+                    {
+                        gameVersion = GameVersion.XBOX;
+                    }
+
+                    return gameVersion;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Glacier TEX Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return gameVersion;
+        }
+
+        public void WriteGameVersion(string gameVersion)
+        {
+            try
+            {
+                List<string> lines = File.ReadAllLines("GlacierTEXEditor.ini").ToList();
+                string line = lines.Where(l => l.StartsWith("GameVersion")).FirstOrDefault();
+
+                if (line != null)
+                {
+                    string newGameVersion = line.Replace(line.Substring(line.IndexOf('=') + 1), gameVersion);
+
+                    int index = lines.FindIndex(l => l.StartsWith("GameVersion"));
+                    lines[index] = newGameVersion;
+                }
+                else
+                {
+                    lines.Add("GameVersion=" + gameVersion);
+                }
+
+                File.WriteAllLines("GlacierTEXEditor.ini", lines);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Glacier TEX Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        public bool CheckIfGameVersionExists()
+        {
+            try
+            {
+                List<string> lines = File.ReadAllLines("GlacierTEXEditor.ini").ToList();
+                string line = lines.Where(l => l.StartsWith("GameVersion")).FirstOrDefault();
+
+                return line != null;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Glacier TEX Editor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return false;
+        }
     }
 }

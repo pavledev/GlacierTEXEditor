@@ -104,6 +104,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="GameVersion.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="Option.cs" />
     <Compile Include="Program.cs" />
@@ -119,6 +120,12 @@
     </Compile>
     <Compile Include="Settings.Designer.cs">
       <DependentUpon>Settings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SmoothProgressBar.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SmoothProgressBar.Designer.cs">
+      <DependentUpon>SmoothProgressBar.cs</DependentUpon>
     </Compile>
     <Compile Include="TargaImage.cs" />
     <Compile Include="Texture.cs" />

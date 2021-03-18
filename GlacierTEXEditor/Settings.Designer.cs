@@ -33,6 +33,10 @@
             this.rbFastest = new System.Windows.Forms.RadioButton();
             this.chkUpdateZipAutomatically = new System.Windows.Forms.CheckBox();
             this.btnOk = new System.Windows.Forms.Button();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.rbPS4 = new System.Windows.Forms.RadioButton();
+            this.rbPC = new System.Windows.Forms.RadioButton();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // rbOptimal
@@ -94,11 +98,50 @@
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.BtnOk_Click);
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.rbPS4);
+            this.groupBox1.Controls.Add(this.rbPC);
+            this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBox1.Location = new System.Drawing.Point(241, 34);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(200, 78);
+            this.groupBox1.TabIndex = 6;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Game version";
+            // 
+            // rbPS4
+            // 
+            this.rbPS4.AutoSize = true;
+            this.rbPS4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbPS4.Location = new System.Drawing.Point(103, 27);
+            this.rbPS4.Name = "rbPS4";
+            this.rbPS4.Size = new System.Drawing.Size(57, 24);
+            this.rbPS4.TabIndex = 4;
+            this.rbPS4.TabStop = true;
+            this.rbPS4.Text = "PS4";
+            this.rbPS4.UseVisualStyleBackColor = true;
+            this.rbPS4.CheckedChanged += new System.EventHandler(this.RbPS4_CheckedChanged);
+            // 
+            // rbPC
+            // 
+            this.rbPC.AutoSize = true;
+            this.rbPC.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbPC.Location = new System.Drawing.Point(16, 27);
+            this.rbPC.Name = "rbPC";
+            this.rbPC.Size = new System.Drawing.Size(48, 24);
+            this.rbPC.TabIndex = 3;
+            this.rbPC.TabStop = true;
+            this.rbPC.Text = "PC";
+            this.rbPC.UseVisualStyleBackColor = true;
+            this.rbPC.CheckedChanged += new System.EventHandler(this.RbPC_CheckedChanged);
+            // 
             // Settings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(495, 269);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.chkUpdateZipAutomatically);
             this.Controls.Add(this.rbFastest);
@@ -107,6 +150,8 @@
             this.Name = "Settings";
             this.Text = "Settings";
             this.Load += new System.EventHandler(this.Settings_Load);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -119,5 +164,8 @@
         private System.Windows.Forms.RadioButton rbFastest;
         private System.Windows.Forms.CheckBox chkUpdateZipAutomatically;
         private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.RadioButton rbPS4;
+        private System.Windows.Forms.RadioButton rbPC;
     }
 }

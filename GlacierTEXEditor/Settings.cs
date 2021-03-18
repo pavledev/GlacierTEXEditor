@@ -34,10 +34,17 @@ namespace GlacierTEXEditor
             set;
         }
 
+        public GameVersion GameVersion
+        {
+            get;
+            set;
+        }
+
         private void Settings_Load(object sender, EventArgs e)
         {
             CompressionLvl = configuration.GetCompressionLevel();
             UpdateZIPAutomatically = configuration.GetAutoUpdateZIPState();
+            GameVersion = configuration.GetGameVersion();
 
             chkUpdateZipAutomatically.Checked = UpdateZIPAutomatically;
 
@@ -48,6 +55,22 @@ namespace GlacierTEXEditor
             else if (CompressionLvl == CompressionLevel.Fastest)
             {
                 rbFastest.Checked = true;
+            }
+
+            switch (GameVersion)
+            {
+                case GameVersion.PC:
+                    rbPC.Checked = true;
+                    break;
+                case GameVersion.PS2:
+                    break;
+                case GameVersion.PS3:
+                    break;
+                case GameVersion.PS4:
+                    rbPS4.Checked = true;
+                    break;
+                case GameVersion.XBOX:
+                    break;
             }
         }
 
@@ -60,6 +83,15 @@ namespace GlacierTEXEditor
             else
             {
                 configuration.WriteCompressionLevel("Fastest");
+            }
+
+            if (rbPC.Checked)
+            {
+                configuration.WriteGameVersion("PC");
+            }
+            else
+            {
+                configuration.WriteGameVersion("PS4");
             }
 
             configuration.SetAutoUpdateZIP(chkUpdateZipAutomatically.Checked);
@@ -80,6 +112,16 @@ namespace GlacierTEXEditor
         private void ChkUpdateZipAutomatically_CheckedChanged(object sender, EventArgs e)
         {
             UpdateZIPAutomatically = chkUpdateZipAutomatically.Checked;
+        }
+
+        private void RbPC_CheckedChanged(object sender, EventArgs e)
+        {
+            GameVersion = GameVersion.PC;
+        }
+
+        private void RbPS4_CheckedChanged(object sender, EventArgs e)
+        {
+            GameVersion = GameVersion.PS4;
         }
     }
 }
