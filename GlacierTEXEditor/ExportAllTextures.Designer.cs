@@ -46,15 +46,16 @@
             this.btnRefreshList = new System.Windows.Forms.Button();
             this.btnExportAllTextures = new System.Windows.Forms.Button();
             this.grpExportAllAs = new System.Windows.Forms.GroupBox();
-            this.btnSelectAllDimensions = new System.Windows.Forms.Button();
-            this.cklDimensions = new System.Windows.Forms.CheckedListBox();
-            this.chkExportAsSingleFile = new System.Windows.Forms.CheckBox();
-            this.lbExtensions = new System.Windows.Forms.ListBox();
             this.chkDDS = new System.Windows.Forms.CheckBox();
             this.chkJPG = new System.Windows.Forms.CheckBox();
             this.chkBMP = new System.Windows.Forms.CheckBox();
             this.chkTGA = new System.Windows.Forms.CheckBox();
             this.chkPNG = new System.Windows.Forms.CheckBox();
+            this.btnSelectAllDimensions = new System.Windows.Forms.Button();
+            this.cklDimensions = new System.Windows.Forms.CheckedListBox();
+            this.chkExportAsSingleFile = new System.Windows.Forms.CheckBox();
+            this.lbExtensions = new System.Windows.Forms.ListBox();
+            this.chkExportOnlyHighestResolution = new System.Windows.Forms.CheckBox();
             this.grpTextureTypes.SuspendLayout();
             this.grpExportAllAs.SuspendLayout();
             this.SuspendLayout();
@@ -203,7 +204,7 @@
             // btnClearAllDimensions
             // 
             this.btnClearAllDimensions.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnClearAllDimensions.Location = new System.Drawing.Point(972, 510);
+            this.btnClearAllDimensions.Location = new System.Drawing.Point(972, 530);
             this.btnClearAllDimensions.Name = "btnClearAllDimensions";
             this.btnClearAllDimensions.Size = new System.Drawing.Size(200, 28);
             this.btnClearAllDimensions.TabIndex = 48;
@@ -247,50 +248,6 @@
             this.grpExportAllAs.TabIndex = 42;
             this.grpExportAllAs.TabStop = false;
             this.grpExportAllAs.Text = "Export All As:";
-            // 
-            // btnSelectAllDimensions
-            // 
-            this.btnSelectAllDimensions.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSelectAllDimensions.Location = new System.Drawing.Point(972, 476);
-            this.btnSelectAllDimensions.Name = "btnSelectAllDimensions";
-            this.btnSelectAllDimensions.Size = new System.Drawing.Size(200, 28);
-            this.btnSelectAllDimensions.TabIndex = 43;
-            this.btnSelectAllDimensions.Text = "Select All";
-            this.btnSelectAllDimensions.UseVisualStyleBackColor = true;
-            this.btnSelectAllDimensions.Click += new System.EventHandler(this.BtnSelectAllDimensions_Click);
-            // 
-            // cklDimensions
-            // 
-            this.cklDimensions.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cklDimensions.FormattingEnabled = true;
-            this.cklDimensions.Location = new System.Drawing.Point(972, 271);
-            this.cklDimensions.Name = "cklDimensions";
-            this.cklDimensions.Size = new System.Drawing.Size(200, 193);
-            this.cklDimensions.TabIndex = 44;
-            this.cklDimensions.SelectedIndexChanged += new System.EventHandler(this.CklDimensions_SelectedIndexChanged);
-            // 
-            // chkExportAsSingleFile
-            // 
-            this.chkExportAsSingleFile.AutoSize = true;
-            this.chkExportAsSingleFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkExportAsSingleFile.Location = new System.Drawing.Point(767, 241);
-            this.chkExportAsSingleFile.Name = "chkExportAsSingleFile";
-            this.chkExportAsSingleFile.Size = new System.Drawing.Size(174, 24);
-            this.chkExportAsSingleFile.TabIndex = 53;
-            this.chkExportAsSingleFile.Text = "Export As Single File";
-            this.chkExportAsSingleFile.UseVisualStyleBackColor = true;
-            this.chkExportAsSingleFile.CheckedChanged += new System.EventHandler(this.ChkExportAsSingleFile_CheckedChanged);
-            // 
-            // lbExtensions
-            // 
-            this.lbExtensions.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbExtensions.FormattingEnabled = true;
-            this.lbExtensions.ItemHeight = 20;
-            this.lbExtensions.Location = new System.Drawing.Point(767, 271);
-            this.lbExtensions.Name = "lbExtensions";
-            this.lbExtensions.Size = new System.Drawing.Size(200, 184);
-            this.lbExtensions.TabIndex = 54;
-            this.lbExtensions.SelectedIndexChanged += new System.EventHandler(this.LbExtensions_SelectedIndexChanged);
             // 
             // chkDDS
             // 
@@ -347,11 +304,67 @@
             this.chkPNG.Text = "PNG";
             this.chkPNG.UseVisualStyleBackColor = true;
             // 
+            // btnSelectAllDimensions
+            // 
+            this.btnSelectAllDimensions.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSelectAllDimensions.Location = new System.Drawing.Point(972, 496);
+            this.btnSelectAllDimensions.Name = "btnSelectAllDimensions";
+            this.btnSelectAllDimensions.Size = new System.Drawing.Size(200, 28);
+            this.btnSelectAllDimensions.TabIndex = 43;
+            this.btnSelectAllDimensions.Text = "Select All";
+            this.btnSelectAllDimensions.UseVisualStyleBackColor = true;
+            this.btnSelectAllDimensions.Click += new System.EventHandler(this.BtnSelectAllDimensions_Click);
+            // 
+            // cklDimensions
+            // 
+            this.cklDimensions.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cklDimensions.FormattingEnabled = true;
+            this.cklDimensions.Location = new System.Drawing.Point(972, 291);
+            this.cklDimensions.Name = "cklDimensions";
+            this.cklDimensions.Size = new System.Drawing.Size(200, 193);
+            this.cklDimensions.TabIndex = 44;
+            this.cklDimensions.SelectedIndexChanged += new System.EventHandler(this.CklDimensions_SelectedIndexChanged);
+            // 
+            // chkExportAsSingleFile
+            // 
+            this.chkExportAsSingleFile.AutoSize = true;
+            this.chkExportAsSingleFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkExportAsSingleFile.Location = new System.Drawing.Point(767, 231);
+            this.chkExportAsSingleFile.Name = "chkExportAsSingleFile";
+            this.chkExportAsSingleFile.Size = new System.Drawing.Size(174, 24);
+            this.chkExportAsSingleFile.TabIndex = 53;
+            this.chkExportAsSingleFile.Text = "Export As Single File";
+            this.chkExportAsSingleFile.UseVisualStyleBackColor = true;
+            this.chkExportAsSingleFile.CheckedChanged += new System.EventHandler(this.ChkExportAsSingleFile_CheckedChanged);
+            // 
+            // lbExtensions
+            // 
+            this.lbExtensions.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbExtensions.FormattingEnabled = true;
+            this.lbExtensions.ItemHeight = 20;
+            this.lbExtensions.Location = new System.Drawing.Point(767, 291);
+            this.lbExtensions.Name = "lbExtensions";
+            this.lbExtensions.Size = new System.Drawing.Size(200, 184);
+            this.lbExtensions.TabIndex = 54;
+            this.lbExtensions.SelectedIndexChanged += new System.EventHandler(this.LbExtensions_SelectedIndexChanged);
+            // 
+            // chkExportOnlyHighestResolution
+            // 
+            this.chkExportOnlyHighestResolution.AutoSize = true;
+            this.chkExportOnlyHighestResolution.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkExportOnlyHighestResolution.Location = new System.Drawing.Point(767, 261);
+            this.chkExportOnlyHighestResolution.Name = "chkExportOnlyHighestResolution";
+            this.chkExportOnlyHighestResolution.Size = new System.Drawing.Size(412, 24);
+            this.chkExportOnlyHighestResolution.TabIndex = 56;
+            this.chkExportOnlyHighestResolution.Text = "Export Only Highest Resolution (Applies to all textures)";
+            this.chkExportOnlyHighestResolution.UseVisualStyleBackColor = true;
+            // 
             // ExportAllTextures
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 620);
+            this.Controls.Add(this.chkExportOnlyHighestResolution);
             this.Controls.Add(this.lbExtensions);
             this.Controls.Add(this.chkExportAsSingleFile);
             this.Controls.Add(this.btnSelectAllExtensionTypes);
@@ -405,5 +418,6 @@
         private System.Windows.Forms.CheckBox chkBMP;
         private System.Windows.Forms.CheckBox chkTGA;
         private System.Windows.Forms.CheckBox chkPNG;
+        private System.Windows.Forms.CheckBox chkExportOnlyHighestResolution;
     }
 }

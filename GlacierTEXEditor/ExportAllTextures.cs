@@ -74,6 +74,12 @@ namespace GlacierTEXEditor
             set;
         }
 
+        public bool ExportOnlyHighestResolution
+        {
+            get;
+            set;
+        }
+
         public string ExportPath
         {
             get;
@@ -133,6 +139,8 @@ namespace GlacierTEXEditor
 
         private void BtnExportAllTextures_Click(object sender, EventArgs e)
         {
+            ExportOnlyHighestResolution = chkExportOnlyHighestResolution.Checked;
+
             if (chkDDS.Checked || chkTGA.Checked || chkBMP.Checked || chkPNG.Checked || chkJPG.Checked)
             {
                 foreach (CheckBox checkBox in grpExportAllAs.Controls.OfType<CheckBox>())

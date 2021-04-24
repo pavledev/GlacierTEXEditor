@@ -1326,7 +1326,6 @@ namespace GlacierTEXEditor
             {
                 using (ExportOptions exportOptions = new ExportOptions())
                 {
-
                     exportOptions.FileName = "File Name: " + texture.FileName;
                     exportOptions.SetDimensions(texture.Width, texture.Height);
                     exportOptions.Extension = extension;
@@ -1345,7 +1344,7 @@ namespace GlacierTEXEditor
                         {
                             if (exportOptions.ExportAsSingleFile)
                             {
-                                exported = ExportSelectedOptionsToDDS(texture, exportOptions.SelectedDimensions, texture.Type1, exportPath);
+                                exported = ExportSelectedOptionsToDDS(texture, exportOptions.SelectedDimensions, texture.Type1, exportPath, false);
                             }
                             else
                             {
@@ -1501,7 +1500,7 @@ namespace GlacierTEXEditor
                         {
                             if (exportOptions.ExportAsSingleFile)
                             {
-                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "L8", exportPath);
+                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "L8", exportPath, false);
 
                                 return exported;
                             }
@@ -1562,7 +1561,7 @@ namespace GlacierTEXEditor
             }
         }
 
-        private bool ExportSelectedOptionsToDDS(Texture texture, Dictionary<int, string> selectedDimensions, string type, string exportPath)
+        private bool ExportSelectedOptionsToDDS(Texture texture, Dictionary<int, string> selectedDimensions, string type, string exportPath, bool exportOnlyHighestResolution)
         {
             Texture newTexture = ObjectExtensions.Clone(texture);
             newTexture.NumOfMipMips = selectedDimensions.Keys.Count;
@@ -1572,12 +1571,31 @@ namespace GlacierTEXEditor
             newTexture.Width = Convert.ToInt32(value.Substring(0, value.IndexOf('x')));
             newTexture.Height = Convert.ToInt32(value.Substring(value.IndexOf('x') + 1));
 
-            newTexture.Data = new byte[newTexture.NumOfMipMips][];
-            newTexture.MipMapLevelSizes = new int[newTexture.NumOfMipMips];
-
-            for (int i = 0; i < selectedDimensions.Count; i++)
+            if (!exportOnlyHighestResolution)
             {
-                int index = selectedDimensions.Keys.ElementAt(i);
+                newTexture.Data = new byte[newTexture.NumOfMipMips][];
+                newTexture.MipMapLevelSizes = new int[newTexture.NumOfMipMips];
+
+                for (int i = 0; i < selectedDimensions.Count; i++)
+                {
+                    int index = selectedDimensions.Keys.ElementAt(i);
+                    byte[] data = texture.Data[index];
+
+                    if (texture.Type1.Equals("U8V8"))
+                    {
+                        data = ConvertU8V8ToBGRA(data);
+                    }
+
+                    newTexture.Data[i] = data;
+                    newTexture.MipMapLevelSizes[i] = data.Length;
+                }
+            }
+            else
+            {
+                newTexture.Data = new byte[1][];
+                newTexture.MipMapLevelSizes = new int[1];
+
+                int index = selectedDimensions.Keys.ElementAt(0);
                 byte[] data = texture.Data[index];
 
                 if (texture.Type1.Equals("U8V8"))
@@ -1585,8 +1603,8 @@ namespace GlacierTEXEditor
                     data = ConvertU8V8ToBGRA(data);
                 }
 
-                newTexture.Data[i] = data;
-                newTexture.MipMapLevelSizes[i] = data.Length;
+                newTexture.Data[0] = data;
+                newTexture.MipMapLevelSizes[0] = data.Length;
             }
 
             return ExportDDSFile(newTexture, type, exportPath);
@@ -1826,7 +1844,7 @@ namespace GlacierTEXEditor
                         {
                             if (exportOptions.ExportAsSingleFile)
                             {
-                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "A8B8G8R8", exportPath);
+                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "A8B8G8R8", exportPath, false);
 
                                 return exported;
                             }
@@ -1945,7 +1963,7 @@ namespace GlacierTEXEditor
                         {
                             if (exportOptions.ExportAsSingleFile)
                             {
-                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "A8B8G8R8", exportPath);
+                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "A8B8G8R8", exportPath, false);
 
                                 return exported;
                             }
@@ -2065,7 +2083,7 @@ namespace GlacierTEXEditor
                         {
                             if (exportOptions.ExportAsSingleFile)
                             {
-                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "A8B8G8R8", exportPath);
+                                bool exported = ExportSelectedOptionsToDDS(texture, selectedDimensions, "A8B8G8R8", exportPath, false);
 
                                 return exported;
                             }
@@ -2676,11 +2694,21 @@ namespace GlacierTEXEditor
                             {
                                 if (option.Value.ExportAsSingleFile)
                                 {
-                                    ExportSelectedOptionsToDDS(texture, entry.Value, texture.Type1, exportPath);
+                                    ExportSelectedOptionsToDDS(texture, entry.Value, texture.Type1, exportPath, 
+                                        exportAllTextures.ExportOnlyHighestResolution);
                                 }
                                 else
                                 {
-                                    Dictionary<int, string> paths = GetExportPaths(entry.Value, texture.Width, texture.Height, extension, exportPath);
+                                    Dictionary<int, string> paths;
+
+                                    if (!exportAllTextures.ExportOnlyHighestResolution)
+                                    {
+                                        paths = GetExportPaths(entry.Value, texture.Width, texture.Height, extension, exportPath);
+                                    }
+                                    else
+                                    {
+                                        paths = GetExportPaths(null, texture.Width, texture.Height, extension, exportPath);
+                                    }
 
                                     foreach (KeyValuePair<int, string> entry2 in paths)
                                     {
@@ -2710,7 +2738,16 @@ namespace GlacierTEXEditor
                             }
                             else
                             {
-                                Dictionary<int, string> paths = GetExportPaths(entry.Value, texture.Width, texture.Height, extension, exportPath);
+                                Dictionary<int, string> paths;
+
+                                if (!exportAllTextures.ExportOnlyHighestResolution)
+                                {
+                                    paths = GetExportPaths(entry.Value, texture.Width, texture.Height, extension, exportPath);
+                                }
+                                else
+                                {
+                                    paths = GetExportPaths(null, texture.Width, texture.Height, extension, exportPath);
+                                }
 
                                 foreach (KeyValuePair<int, string> entry2 in paths)
                                 {
